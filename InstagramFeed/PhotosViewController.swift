@@ -20,6 +20,14 @@ class PhotosViewController: UIViewController, UITableViewDataSource, UITableView
         
         tableView.rowHeight = 320
         
+        let uiRefreshControl = UIRefreshControl()
+        uiRefreshControl.addTarget(self, action: "refreshControlAction:", forControlEvents: UIControlEvents.ValueChanged)
+        tableView.insertSubview(uiRefreshControl, atIndex: 0)
+        refreshControlAction(uiRefreshControl)
+        
+    }
+    
+    func refreshControlAction(refreshControl: UIRefreshControl) {
         let clientId = "e05c462ebd86446ea48a5af73769b602"
         let url = NSURL(string:"https://api.instagram.com/v1/media/popular?client_id=\(clientId)")
         let request = NSURLRequest(URL: url!)
@@ -49,8 +57,10 @@ class PhotosViewController: UIViewController, UITableViewDataSource, UITableView
                     }
                 }
                 self.tableView.reloadData()
+                refreshControl.endRefreshing()
         });
         task.resume()
+
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -61,6 +71,17 @@ class PhotosViewController: UIViewController, UITableViewDataSource, UITableView
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return medias.count
+    }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        let vc = segue.destinationViewController as! PhotoDetailsViewController
+        let indexPath = tableView.indexPathForCell(sender as! TableViewCell)
+        vc.photo = medias[(indexPath?.row)!]
+        vc.navigationItem.title = vc.photo?.absoluteString
+    }
+    
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        tableView.deselectRowAtIndexPath(indexPath, animated: true)
     }
     
 }
